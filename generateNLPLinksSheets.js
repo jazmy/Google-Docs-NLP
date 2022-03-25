@@ -1,9 +1,9 @@
 /*------------------------------------------------
 Google App Script to Parse Google Doc Content using Google Cloud Natural Language API
 and store results in a new Google Sheet titled "NLP_Results_timestamp" in a tab titled "entitySentiment". 
-Also Parses Google Doc Content for URLs and stores those URL is a separate tab titled "Links"
+Also Parses Google Doc Content for URLs and stores those URLs in a separate tab titled "Links" on the
 same Google Sheet.
-To run this script you will need a Google Cloud Natural Language API Key
+To run this script you will need a Google Cloud Natural Language API Key.
 ------------------------------------------------*/
 
 // The function will take the document body and send it to the Google Cloud Natural Language API
