@@ -85,7 +85,7 @@ function createSpreadsheet(nlData) {
     var links = getAllLinks();
     // Loop through the array and write to rows on the spreadsheet
     links.forEach(function (link) {
-        var row = [link.url];
+        var row = [link];
         newValues1.push(row);
     });
     if (newValues1.length) {
@@ -96,96 +96,12 @@ function createSpreadsheet(nlData) {
 }
 
 // Returns a flat array of links which appear in the active document's body. 
-// Documentation: https://stackoverflow.com/questions/18727341/get-all-links-in-a-document
-function getAllLinks(mergeAdjacent) {
-    var links = [];
+// https://urlregex.com/
+function getAllLinks() {
     var doc = DocumentApp.getActiveDocument();
-
-    iterateSections(doc, function (section, sectionIndex, isFirstPageSection) {
-        if (!("getParagraphs" in section)) {
-            // as we're using some undocumented API, adding this to avoid cryptic
-            // messages upon possible API changes.
-            throw new Error("An API change has caused this script to stop " +
-                "working.\n" +
-                "Section #" + sectionIndex + " of type " +
-                section.getType() + " has no .getParagraphs() method. " +
-                "Stopping script.");
-        }
-
-        section.getParagraphs().forEach(function (par) {
-            // skip empty paragraphs
-            if (par.getNumChildren() == 0) {
-                return;
-            }
-
-            // go over all text elements in paragraph / list-item
-            for (var el = par.getChild(0); el != null; el = el.getNextSibling()) {
-                if (el.getType() != DocumentApp.ElementType.TEXT) {
-                    continue;
-                }
-
-                // go over all styling segments in text element
-                var attributeIndices = el.getTextAttributeIndices();
-                var lastLink = null;
-                attributeIndices.forEach(function (startOffset, i, attributeIndices) {
-                    var url = el.getLinkUrl(startOffset);
-
-                    if (url != null) {
-                        // we hit a link
-                        var endOffsetInclusive = (i + 1 < attributeIndices.length ?
-                            attributeIndices[i + 1] - 1 : null);
-
-                        // check if this and the last found link are continuous
-                        if (mergeAdjacent && lastLink != null && lastLink.url == url &&
-                            lastLink.endOffsetInclusive == startOffset - 1) {
-                            // this and the previous style segment are continuous
-                            lastLink.endOffsetInclusive = endOffsetInclusive;
-                            return;
-                        }
-
-                        lastLink = {
-                            "section": section,
-                            "isFirstPageSection": isFirstPageSection,
-                            "paragraph": par,
-                            "textEl": el,
-                            "startOffset": startOffset,
-                            "endOffsetInclusive": endOffsetInclusive,
-                            "url": url
-                        };
-
-                        links.push(lastLink);
-                    }
-                });
-            }
-        });
-    });
-    return links;
-}
-
-// Calls the given function for each section of the document (body, header, 
-// etc.). Sections are children of the DocumentElement object.
-// Documentation: https://stackoverflow.com/questions/18727341/get-all-links-in-a-document
-function iterateSections(doc, func) {
-    // get the DocumentElement interface to iterate over all sections
-    // this bit is undocumented API
-    var docEl = doc.getBody().getParent();
-
-    var regularHeaderSectionIndex = (doc.getHeader() == null ? -1 :
-        docEl.getChildIndex(doc.getHeader()));
-    var regularFooterSectionIndex = (doc.getFooter() == null ? -1 :
-        docEl.getChildIndex(doc.getFooter()));
-
-    for (var i = 0; i < docEl.getNumChildren(); ++i) {
-        var section = docEl.getChild(i);
-
-        var sectionType = section.getType();
-        var uniqueSectionName;
-        var isFirstPageSection = (
-            i != regularHeaderSectionIndex &&
-            i != regularFooterSectionIndex &&
-            (sectionType == DocumentApp.ElementType.HEADER_SECTION ||
-                sectionType == DocumentApp.ElementType.FOOTER_SECTION));
-
-        func(section, i, isFirstPageSection);
-    }
+    const body = doc.getBody();
+    const docText = body.getText();
+    var urlRegex = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/g
+    //console.log(docText.match(urlRegex))
+    return docText.match(urlRegex);
 }
