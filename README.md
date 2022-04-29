@@ -7,3 +7,6 @@ Also Parses Google Doc Content for URLs and stores those URLs in a separate tab 
 To run this script you will need a Google Cloud Natural Language API Key
 
 Paste the contents of the file generateNLPLinksSheets.js into the google doc script editor on the document that you would like to process.
+
+##Video Tutorial
+Want step-by-step instructions? [Video](https://smartjots.gumroad.com/l/google-nlp-docs) 
